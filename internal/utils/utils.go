@@ -1,18 +1,22 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
 
-func ParseCategories(categories []string) (string){
-	parsed := ""
-	if len(categories) == 0 {
-		return parsed
+	"github.com/AsierAlaminos/NoteShell/internal/files"
+	"github.com/charmbracelet/bubbles/list"
+)
+
+func CreateIdeaList(ideasPath string) []list.Item {
+	var items []list.Item
+
+	dirs := files.ReadDirs(ideasPath)
+
+	for _,d := range dirs {
+		jsonPath := fmt.Sprintf("%s/%s/%s.json", ideasPath, d, d)
+		idea := files.ReadJsonIdea(jsonPath)
+		items = append(items, idea)
 	}
 
-	for i := 0; i < len(categories) - 1; i++ {
-		parsed += fmt.Sprintf("%s, ", categories[i])
-	}
-
-	parsed += fmt.Sprintf("%s", categories[len(categories) - 1])
-
-	return parsed
+	return items
 }

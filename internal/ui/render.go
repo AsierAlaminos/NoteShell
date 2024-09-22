@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 
-	"github.com/AsierAlaminos/NoteShell/internal/utils"
+	"github.com/AsierAlaminos/NoteShell/internal/model"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -19,19 +19,10 @@ var (
 	SelectedCategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("247"))
 )
 
-type Idea struct {
-	Name string
-	Categories []string
-}
-
-func (i Idea) Title() string { return i.Name }
-func (i Idea) Description() string { return utils.ParseCategories(i.Categories) }
-func (i Idea) FilterValue() string { return i.Name + " " + utils.ParseCategories(i.Categories) }
-
 
 type Model struct {
 	List list.Model
-	choice Idea
+	choice model.Idea
 }
 
 func (m Model) Init() tea.Cmd {
@@ -48,7 +39,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q", "ctrl+c":
 				return m, tea.Quit
 			case " ", "enter":
-				i, ok := m.List.SelectedItem().(Idea)
+				i, ok := m.List.SelectedItem().(model.Idea)
 				if ok {
 					m.choice = i
 				}

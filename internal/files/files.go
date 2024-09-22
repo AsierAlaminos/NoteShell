@@ -2,11 +2,14 @@ package files
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/user"
 	"strings"
 
-	"github.com/AsierAlaminos/NoteShell/internal/utils"
+	"encoding/json"
+
+	"github.com/AsierAlaminos/NoteShell/internal/model"
 )
 
 func CreateConfDir() {
@@ -47,7 +50,7 @@ func CreateIdeaFiles(idea string) {
 		mdPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.md", currentUser.HomeDir, strings.ToLower(idea), strings.ToLower(idea))
 		createFile(ideaPath)
 		createFile(mdPath)
-		writeIdeaJson(ideaPath, idea, []string{"uno", "dos", "tres"})
+		writeIdeaJson(ideaPath, idea, []string{"\"uno\"", "\"dos\"", "\"tres\""})
 	}
 }
 
@@ -63,7 +66,12 @@ func createFile(filePath string) {
 }
 
 func writeIdeaJson(ideaPath string, idea string, categories []string) {
-	squeleton := fmt.Sprintf("{\"name\": %s, \"descfile\": %s.md, \"categories\": [%s]}", idea, idea, main.ParseCategories(categories))
+	ideaModel := model.Idea{
+		Name: idea,
+		DescFile: idea + ".md",
+		Categories: categories,
+	}
+	squeleton := fmt.Sprintf("{\"name\": \"%s\", \"descfile\": \"%s.md\", \"categories\": [%s]}", ideaModel, ideaModel, ideaModel.ParseCategories())
 	err := os.WriteFile(ideaPath, []byte(squeleton), 0777)
 	if err != nil {
 		fmt.Println("[!] Error writing the file")
@@ -72,3 +80,35 @@ func writeIdeaJson(ideaPath string, idea string, categories []string) {
 	}
 }
 
+func ReadDirs(path string) []string {
+	entries, err := os.ReadDir(path)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	var dirs []string
+	for _, e := range entries {
+		dirs = append(dirs, e.Name())
+		/*jsonPath := fmt.Sprintf("%s/%s/%s.json", path, e.Name(), e.Name())
+		idea := readJsonIdea(jsonPath)
+		fmt.Println("\n" + jsonPath)
+		fmt.Printf("name: %s\ndescfile: %s\ncategories: %s\n", idea.Name, idea.DescFile, utils.ParseCategories(idea.Categories))*/
+	}
+
+	return dirs
+}
+
+func ReadJsonIdea(path string) model.Idea {
+	byteValue, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Println("[!] Exiting... (invalid json file)")
+		os.Exit(1)
+	}
+	var idea model.Idea
+
+	if err := json.Unmarshal(byteValue, &idea); err != nil {
+		fmt.Println("[!] error json file")
+	}
+
+	return idea
+}

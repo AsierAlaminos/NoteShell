@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/AsierAlaminos/NoteShell/internal/utils"
+	"github.com/AsierAlaminos/NoteShell/internal/model"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,13 +17,13 @@ func (d IdeaDelegate) Height() int { return 1 }
 func (d IdeaDelegate) Spacing() int { return 0 }
 func (d IdeaDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 func (d IdeaDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(Idea)
+	i, ok := listItem.(model.Idea)
 	if !ok {
 		return
 	}
 
 	name := fmt.Sprintf("%d. %s", index + 1, i.Name)
-	categories := utils.ParseCategories(i.Categories)
+	categories := i.ParseCategories()
 
 	nameFn := ItemStyle.Render
 	catFn := CategoryStyle.Render
