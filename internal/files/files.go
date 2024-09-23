@@ -23,18 +23,18 @@ func CreateConfDir() {
 
 	if _, err := os.Stat(confDirPath); os.IsNotExist(err) {
 		os.Mkdir(confDirPath, 0755)
-		fmt.Printf("[*] %s created\n", confDirPath)
+		//fmt.Printf("[*] %s created\n", confDirPath)
 	}
 
 	ideasPath := fmt.Sprintf("%s/ideas", confDirPath)
 
 	if _, err := os.Stat(ideasPath); os.IsNotExist(err) {
 		os.Mkdir(ideasPath, 0755)
-		fmt.Printf("[*] %s created\n", ideasPath)
+		//fmt.Printf("[*] %s created\n", ideasPath)
 	}
 }
 
-func CreateIdeaFiles(idea string) {
+func CreateIdeaFiles(idea string, categories []string) {
 	currentUser, err := user.Current()
 
 	if err != nil {
@@ -45,12 +45,12 @@ func CreateIdeaFiles(idea string) {
 
 	if _, err := os.Stat(ideaDirPath); os.IsNotExist(err) {
 		os.Mkdir(ideaDirPath, 0755)
-		fmt.Printf("[*] %s created\n", ideaDirPath)
+		//fmt.Printf("[*] %s created\n", ideaDirPath)
 		ideaPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.json", currentUser.HomeDir, strings.ToLower(idea), strings.ToLower(idea))
 		mdPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.md", currentUser.HomeDir, strings.ToLower(idea), strings.ToLower(idea))
 		createFile(ideaPath)
 		createFile(mdPath)
-		writeIdeaJson(ideaPath, idea, []string{"\"uno\"", "\"dos\"", "\"tres\""})
+		writeIdeaJson(ideaPath, idea, categories)
 	}
 }
 
@@ -58,7 +58,7 @@ func createFile(filePath string) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		_, errFile := os.Create(filePath)
 		if errFile == nil {
-			fmt.Printf("[*] %s created\n", filePath)
+			//fmt.Printf("[*] %s created\n", filePath)
 			return
 		}
 		fmt.Printf("[!] Error creating %s\n", filePath)
@@ -71,7 +71,7 @@ func writeIdeaJson(ideaPath string, idea string, categories []string) {
 		DescFile: idea + ".md",
 		Categories: categories,
 	}
-	squeleton := fmt.Sprintf("{\"name\": \"%s\", \"descfile\": \"%s.md\", \"categories\": [%s]}", ideaModel, ideaModel, ideaModel.ParseCategories())
+	squeleton := fmt.Sprintf("{\"name\": \"%s\", \"descfile\": \"%s.md\", \"categories\": [%s]}", ideaModel.Name, ideaModel.Name, ideaModel.ParseCategories())
 	err := os.WriteFile(ideaPath, []byte(squeleton), 0777)
 	if err != nil {
 		fmt.Println("[!] Error writing the file")
