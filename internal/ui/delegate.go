@@ -45,9 +45,10 @@ type delegateKeyMap struct {
 	nextWindow key.Binding
 	lastWindow key.Binding
 	createIdea key.Binding
+	escape key.Binding
 }
 
-func (d delegateKeyMap) ShortHelp() []key.Binding {
+func (d delegateKeyMap) ListHelp() []key.Binding {
 	return []key.Binding {
 		d.up,
 		d.down,
@@ -58,14 +59,10 @@ func (d delegateKeyMap) ShortHelp() []key.Binding {
 	}
 }
 
-func (d delegateKeyMap) FullHelp() []key.Binding {
+func (d delegateKeyMap) FileHelp() []key.Binding {
 	return []key.Binding {
-		d.up,
-		d.down,
-		d.createIdea,
-		d.nextWindow,
-		d.lastWindow,
 		d.quit,
+		d.escape,
 	}
 }
 
@@ -94,6 +91,9 @@ func NewDelegateKeyMap() *delegateKeyMap {
 		quit: key.NewBinding(
 			key.WithKeys("q", "ctrl+c"),
 			key.WithHelp("q, ctrl+c", "quit"),
+		),
+		escape: key.NewBinding(
+			key.WithKeys("esc", ""),
 		),
 	}
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/AsierAlaminos/NoteShell/internal/files"
 	"github.com/charmbracelet/bubbles/list"
+	"golang.org/x/term"
 )
 
 func CreateIdeaList(ideasPath string) []list.Item {
@@ -19,4 +20,13 @@ func CreateIdeaList(ideasPath string) []list.Item {
 	}
 
 	return items
+}
+
+func getTerminalSize() (width, height int){
+
+	w, h, err := term.GetSize(0)
+	if err != nil {
+		return 
+	}
+	return w, h
 }
