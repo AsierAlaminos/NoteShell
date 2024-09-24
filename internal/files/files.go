@@ -13,13 +13,8 @@ import (
 )
 
 func CreateConfDir() {
-	currentUser, err := user.Current()
 
-	if err != nil {
-		fmt.Printf("[!] User %s doesn't exist\n", currentUser.Username)
-	}
-
-	confDirPath := fmt.Sprintf("%s/.noteshell", currentUser.HomeDir)
+	confDirPath := fmt.Sprintf("%s/.noteshell", CheckUser())
 
 	if _, err := os.Stat(confDirPath); os.IsNotExist(err) {
 		os.Mkdir(confDirPath, 0755)
@@ -33,18 +28,14 @@ func CreateConfDir() {
 }
 
 func CreateIdeaFiles(idea string, categories []string) {
-	currentUser, err := user.Current()
+	homeUser := CheckUser()
 
-	if err != nil {
-		fmt.Printf("[!] User %s doesn't exist", currentUser.Username)
-	}
-
-	ideaDirPath := fmt.Sprintf("%s/.noteshell/ideas/%s", currentUser.HomeDir, strings.ToLower(idea))
+	ideaDirPath := fmt.Sprintf("%s/.noteshell/ideas/%s", homeUser, strings.ToLower(idea))
 
 	if _, err := os.Stat(ideaDirPath); os.IsNotExist(err) {
 		os.Mkdir(ideaDirPath, 0755)
-		ideaPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.json", currentUser.HomeDir, strings.ToLower(idea), strings.ToLower(idea))
-		mdPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.md", currentUser.HomeDir, strings.ToLower(idea), strings.ToLower(idea))
+		ideaPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.json", homeUser, strings.ToLower(idea), strings.ToLower(idea))
+		mdPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.md", homeUser, strings.ToLower(idea), strings.ToLower(idea))
 		createFile(ideaPath)
 		createFile(mdPath)
 		writeIdeaJson(ideaPath, idea, categories)
@@ -85,10 +76,6 @@ func ReadDirs(path string) []string {
 	var dirs []string
 	for _, e := range entries {
 		dirs = append(dirs, e.Name())
-		/*jsonPath := fmt.Sprintf("%s/%s/%s.json", path, e.Name(), e.Name())
-		idea := readJsonIdea(jsonPath)
-		fmt.Println("\n" + jsonPath)
-		fmt.Printf("name: %s\ndescfile: %s\ncategories: %s\n", idea.Name, idea.DescFile, utils.ParseCategories(idea.Categories))*/
 	}
 
 	return dirs
@@ -110,10 +97,21 @@ func ReadJsonIdea(path string) model.Idea {
 }
 
 func Banner() string {
-	byteValue, err := os.ReadFile("/home/asmus/.noteshell/banner.txt")
+	homeDir := CheckUser()
+	byteValue, err := os.ReadFile(fmt.Sprintf("%s/.noteshell/banner.txt", homeDir))
 	if err != nil {
 		fmt.Println("[!] Exiting... (invalid file)")
 		os.Exit(1)
 	}
 	return string(byteValue)
+}
+
+func CheckUser() string {
+	currentUser, err := user.Current()
+
+	if err != nil {
+		log.Fatal("[!] User %s doesn't exist\n", currentUser.Username)
+	}
+
+	return currentUser.HomeDir
 }

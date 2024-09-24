@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AsierAlaminos/NoteShell/internal/files"
 	"github.com/AsierAlaminos/NoteShell/internal/ui"
 	"github.com/AsierAlaminos/NoteShell/internal/utils"
 	"github.com/charmbracelet/bubbles/list"
@@ -11,7 +12,9 @@ import (
 )
 
 func main() {
-	items := utils.CreateIdeaList("/home/asmus/.noteshell/ideas")
+	files.CreateConfDir()
+	homeDir := files.CheckUser()
+	items := utils.CreateIdeaList(fmt.Sprintf("%s/.noteshell/ideas", homeDir))
 
 	l := list.New(items, ui.IdeaDelegate{}, 20, len(items) * 2)
 	l.SetShowStatusBar(false)
