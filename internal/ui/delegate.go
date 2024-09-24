@@ -36,7 +36,6 @@ func (d IdeaDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	fmt.Fprint(w, nameFn(name))
 	fmt.Fprint(w, catFn("\n" + categories))
-	fmt.Fprint(w)
 }
 
 type delegateKeyMap struct {

@@ -6,7 +6,6 @@ import (
 
 	"github.com/AsierAlaminos/NoteShell/internal/files"
 	"github.com/AsierAlaminos/NoteShell/internal/model"
-	"github.com/AsierAlaminos/NoteShell/internal/utils"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -41,7 +40,7 @@ var (
 	PaginationStyle = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	HelpStyle = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1).Foreground(lipgloss.Color("240"))
 	CategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("247"))
-	SelectedCategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("247"))
+	SelectedCategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("250"))
 )
 
 
@@ -50,7 +49,6 @@ type Model struct {
 	choice model.Idea
 	Window Window
 	currentState string
-	creatingIdea bool
 	inputName textinput.Model
 	inputDesc textinput.Model
 }
@@ -109,11 +107,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					name := m.inputName.Value()
 					categories := m.inputDesc.Value()
 					files.CreateIdeaFiles(name, strings.Split(categories, "/"))
+					newIdea := model.Idea {
+						Name: name,
+						DescFile: fmt.Sprintf("%s.md", name),
+						Categories: strings.Split(categories, "/"),
+					}
 					m.inputName.Reset()
 					m.inputDesc.Reset()
 					m.currentState = ""
-					m.List.SetItems(utils.CreateIdeaList("/home/asmus/.noteshell/ideas"))
-					return m, nil
+					
+					items := m.List.Items()
+					items = append(items, newIdea)
+					m.List.SetItems(items)
+					return m, tea.ClearScreen
 				}
 			case "esc":
 				m.currentState = ""
@@ -145,12 +151,11 @@ func (m *Model) View() string {
 		helpText += fmt.Sprintf("%s: %s   ", binding.Help().Key, binding.Help().Desc)
 	}
 	view := "\n" + m.List.View() + HelpStyle.Render(helpText) + "\n"
-	//view += lipgloss.JoinVertical(lipgloss.Bottom, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render(fmt.Sprint(m.Window))) + "\n"
 	if m.currentState == "name" {
 		view += lipgloss.JoinVertical(lipgloss.Bottom, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render("[*] Enter the idea name...")) + "\n"
 		view += m.inputName.View()
 	} else if m.currentState == "description" {
-		view += lipgloss.JoinVertical(lipgloss.Bottom, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render("[*] Enter the idea categories... (separate them by '/')")) + "\n"
+		view += lipgloss.JoinVertical(lipgloss.Right, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render("[*] Enter the idea categories... (separate them by '/')")) + "\n"
 		view += m.inputDesc.View()
 	}
 	return view
