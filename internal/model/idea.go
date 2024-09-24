@@ -20,6 +20,20 @@ func (idea Idea) ParseCategories() string {
 	}
 
 	for i := 0; i < len(idea.Categories) - 1; i++ {
+		parsed += fmt.Sprintf("%s, ", idea.Categories[i])
+	}
+
+	parsed += fmt.Sprintf("%s", idea.Categories[len(idea.Categories) - 1])
+
+	return parsed
+}
+func (idea Idea) ParseCategoriesJson() string {
+	parsed := ""
+	if len(idea.Categories) == 0 {
+		return parsed
+	}
+
+	for i := 0; i < len(idea.Categories) - 1; i++ {
 		parsed += fmt.Sprintf("\"%s\", ", idea.Categories[i])
 	}
 

@@ -4,19 +4,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/AsierAlaminos/NoteShell/internal/ui"
 	"github.com/AsierAlaminos/NoteShell/internal/utils"
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 )
-
-
 
 func main() {
 	items := utils.CreateIdeaList("/home/asmus/.noteshell/ideas")
 
-	l := list.New(items, ui.IdeaDelegate{}, 20, 4 + len(items))
-	l.Title = "Idea list"
+	l := list.New(items, ui.IdeaDelegate{}, 20, len(items) * 2)
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(false)

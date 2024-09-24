@@ -34,23 +34,30 @@ func (s Window) String() string {
 }
 
 var (
+	MarginStyle = lipgloss.NewStyle().MarginLeft(3)
 	TitleStyle = lipgloss.NewStyle().MarginLeft(2)
 	ItemStyle = lipgloss.NewStyle().PaddingLeft(4)
 	SelectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
 	PaginationStyle = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	HelpStyle = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1).Foreground(lipgloss.Color("240"))
+	HelpStyle = list.DefaultStyles().HelpStyle.MarginLeft(0).PaddingLeft(4).PaddingBottom(1).Foreground(lipgloss.Color("240"))
 	CategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("247"))
 	SelectedCategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("250"))
 )
-
 
 type Model struct {
 	List list.Model
 	choice model.Idea
 	Window Window
 	currentState string
+	errorCreatingIdea bool
 	inputName textinput.Model
 	inputDesc textinput.Model
+}
+
+func (m *Model) cleanInputs() {
+	m.inputName.Reset()
+	m.inputDesc.Reset()
+	m.currentState = ""
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -65,11 +72,10 @@ func (m *Model) Init() tea.Cmd {
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.List.SetWidth(msg.Width)
+		m.List.SetSize(msg.Width, msg.Height - len(m.List.Items()) * 2)
 		return m, nil
 	case tea.KeyMsg:
 		if m.currentState == "" {
-
 			switch keypress := msg.String(); keypress {
 			case "q", "ctrl+c":
 				return m, tea.Quit
@@ -106,16 +112,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else if m.currentState == "description" {
 					name := m.inputName.Value()
 					categories := m.inputDesc.Value()
+					if name == "" || categories == "" {
+						m.errorCreatingIdea = true
+						m.cleanInputs()
+						return m, nil
+					}
 					files.CreateIdeaFiles(name, strings.Split(categories, "/"))
 					newIdea := model.Idea {
 						Name: name,
 						DescFile: fmt.Sprintf("%s.md", name),
 						Categories: strings.Split(categories, "/"),
 					}
-					m.inputName.Reset()
-					m.inputDesc.Reset()
-					m.currentState = ""
-					
+					m.cleanInputs()
 					items := m.List.Items()
 					items = append(items, newIdea)
 					m.List.SetItems(items)
@@ -145,12 +153,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) View() string {
-	help := NewDelegateKeyMap().ShortHelp()
-	helpText := ""
-	for _, binding := range help {
-		helpText += fmt.Sprintf("%s: %s   ", binding.Help().Key, binding.Help().Desc)
-	}
-	view := "\n" + m.List.View() + HelpStyle.Render(helpText) + "\n"
+	m.List.Title = ""
+	view := "\n" + files.Banner() + "\n" + m.List.View() + "\n"
 	if m.currentState == "name" {
 		view += lipgloss.JoinVertical(lipgloss.Bottom, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render("[*] Enter the idea name...")) + "\n"
 		view += m.inputName.View()
@@ -158,5 +162,16 @@ func (m *Model) View() string {
 		view += lipgloss.JoinVertical(lipgloss.Right, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render("[*] Enter the idea categories... (separate them by '/')")) + "\n"
 		view += m.inputDesc.View()
 	}
-	return view
+	if m.errorCreatingIdea {
+		m.errorCreatingIdea = false
+		view += lipgloss.JoinVertical(lipgloss.Left, lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Render("[!] Error creating new idea..."))
+	}
+
+	help := NewDelegateKeyMap().ShortHelp()
+	helpText := ""
+	for _, binding := range help {
+		helpText += fmt.Sprintf("%s: %s   ", binding.Help().Key, binding.Help().Desc)
+	}
+	view += HelpStyle.Render(helpText)
+	return MarginStyle.Render(view)
 }

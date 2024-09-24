@@ -23,14 +23,12 @@ func CreateConfDir() {
 
 	if _, err := os.Stat(confDirPath); os.IsNotExist(err) {
 		os.Mkdir(confDirPath, 0755)
-		//fmt.Printf("[*] %s created\n", confDirPath)
 	}
 
 	ideasPath := fmt.Sprintf("%s/ideas", confDirPath)
 
 	if _, err := os.Stat(ideasPath); os.IsNotExist(err) {
 		os.Mkdir(ideasPath, 0755)
-		//fmt.Printf("[*] %s created\n", ideasPath)
 	}
 }
 
@@ -45,7 +43,6 @@ func CreateIdeaFiles(idea string, categories []string) {
 
 	if _, err := os.Stat(ideaDirPath); os.IsNotExist(err) {
 		os.Mkdir(ideaDirPath, 0755)
-		//fmt.Printf("[*] %s created\n", ideaDirPath)
 		ideaPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.json", currentUser.HomeDir, strings.ToLower(idea), strings.ToLower(idea))
 		mdPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.md", currentUser.HomeDir, strings.ToLower(idea), strings.ToLower(idea))
 		createFile(ideaPath)
@@ -58,7 +55,6 @@ func createFile(filePath string) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		_, errFile := os.Create(filePath)
 		if errFile == nil {
-			//fmt.Printf("[*] %s created\n", filePath)
 			return
 		}
 		fmt.Printf("[!] Error creating %s\n", filePath)
@@ -71,7 +67,7 @@ func writeIdeaJson(ideaPath string, idea string, categories []string) {
 		DescFile: idea + ".md",
 		Categories: categories,
 	}
-	squeleton := fmt.Sprintf("{\"name\": \"%s\", \"descfile\": \"%s.md\", \"categories\": [%s]}", ideaModel.Name, ideaModel.Name, ideaModel.ParseCategories())
+	squeleton := fmt.Sprintf("{\"name\": \"%s\", \"descfile\": \"%s.md\", \"categories\": [%s]}", ideaModel.Name, ideaModel.Name, ideaModel.ParseCategoriesJson())
 	err := os.WriteFile(ideaPath, []byte(squeleton), 0777)
 	if err != nil {
 		fmt.Println("[!] Error writing the file")
@@ -111,4 +107,13 @@ func ReadJsonIdea(path string) model.Idea {
 	}
 
 	return idea
+}
+
+func Banner() string {
+	byteValue, err := os.ReadFile("/home/asmus/.noteshell/banner.txt")
+	if err != nil {
+		fmt.Println("[!] Exiting... (invalid file)")
+		os.Exit(1)
+	}
+	return string(byteValue)
 }

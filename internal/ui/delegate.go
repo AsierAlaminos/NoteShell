@@ -44,15 +44,17 @@ type delegateKeyMap struct {
 	quit key.Binding
 	nextWindow key.Binding
 	lastWindow key.Binding
+	createIdea key.Binding
 }
 
 func (d delegateKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding {
 		d.up,
 		d.down,
-		d.quit,
+		d.createIdea,
 		d.nextWindow,
 		d.lastWindow,
+		d.quit,
 	}
 }
 
@@ -60,9 +62,10 @@ func (d delegateKeyMap) FullHelp() []key.Binding {
 	return []key.Binding {
 		d.up,
 		d.down,
-		d.quit,
+		d.createIdea,
 		d.nextWindow,
 		d.lastWindow,
+		d.quit,
 	}
 }
 
@@ -76,9 +79,9 @@ func NewDelegateKeyMap() *delegateKeyMap {
 			key.WithKeys("j", "down"),
 			key.WithHelp("j, ↓", "down"),
 		),
-		quit: key.NewBinding(
-			key.WithKeys("q", "ctrl+c"),
-			key.WithHelp("q, ctrl+c", "quit"),
+		createIdea: key.NewBinding(
+			key.WithKeys("c", "c"),
+			key.WithHelp("c", "create new idea"),
 		),
 		nextWindow: key.NewBinding(
 			key.WithKeys("n", "n"),
@@ -87,6 +90,10 @@ func NewDelegateKeyMap() *delegateKeyMap {
 		lastWindow: key.NewBinding(
 			key.WithKeys("l", "l"),
 			key.WithHelp("l", "last Window"),
+		),
+		quit: key.NewBinding(
+			key.WithKeys("q", "ctrl+c"),
+			key.WithHelp("q, ctrl+c", "quit"),
 		),
 	}
 }
