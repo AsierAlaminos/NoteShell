@@ -36,7 +36,7 @@ func (s Window) String() string {
 
 var (
 	BannerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("93"))
-	MarginStyle = lipgloss.NewStyle().MarginLeft(4)
+	MarginStyle = lipgloss.NewStyle()
 	TitleStyle = lipgloss.NewStyle().MarginLeft(2)
 	ItemStyle = lipgloss.NewStyle().PaddingLeft(4)
 	SelectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
@@ -44,8 +44,7 @@ var (
 	HelpStyle = list.DefaultStyles().HelpStyle.MarginLeft(0).MarginTop(2).PaddingLeft(4).PaddingBottom(1).Foreground(lipgloss.Color("240"))
 	CategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("247"))
 	SelectedCategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("250"))
-	inputTextStyle = MarginStyle.Foreground(lipgloss.Color("57"))
-	inputStyle = MarginStyle.Background(lipgloss.Color("57"))
+	inputTextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("57"))
 	listStyle = lipgloss.NewStyle().Align(lipgloss.Left)
 )
 
@@ -89,7 +88,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.List.SetSize(msg.Width, 14)
 		m.textArea.SetWidth(msg.Width - 10)
-		m.textArea.SetHeight(msg.Height - len(m.List.Items()) * 2)
+		m.textArea.SetHeight(msg.Height - len(m.List.Items()) * 2 - 10)
 		return m, nil
 	case tea.KeyMsg:
 		switch m.Window {
@@ -188,11 +187,11 @@ func (m *Model) View() string {
 	case List:
 		view += listStyle.Render(m.List.View()) + "\n"
 		if m.currentState == "name" {
-			view += lipgloss.JoinHorizontal(lipgloss.Left, inputTextStyle.Render("[*] Enter the idea name...")) + "\n"
-			view += inputStyle.Render(m.inputName.View())
+			view += inputTextStyle.Render("[*] Enter the idea name...") + "\n"
+			view += m.inputName.View() + "\n"
 		} else if m.currentState == "description" {
 			view += lipgloss.JoinVertical(lipgloss.Right, inputTextStyle.Render("[*] Enter the idea categories... (separate them by '/')")) + "\n"
-			view += m.inputDesc.View()
+			view += m.inputDesc.View() + "\n"
 		}
 		if m.errorCreatingIdea {
 			m.errorCreatingIdea = false
@@ -219,6 +218,5 @@ func (m *Model) View() string {
 		}
 		view += HelpStyle.Render(helpText)
 	}
-	view += lipgloss.JoinVertical(lipgloss.Left, lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Render(m.Window.String()))
 	return MarginStyle.Render(view)
 }
