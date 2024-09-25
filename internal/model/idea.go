@@ -5,6 +5,7 @@ import (
 )
 
 type Idea struct {
+	Id int `json:id`
 	Name string `json:"name"`
 	DescFile string `json:"descfile"`
 	Categories []string `json:"categories"`
@@ -27,6 +28,7 @@ func (idea Idea) ParseCategories() string {
 
 	return parsed
 }
+
 func (idea Idea) ParseCategoriesJson() string {
 	parsed := ""
 	if len(idea.Categories) == 0 {

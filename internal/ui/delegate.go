@@ -45,7 +45,8 @@ type delegateKeyMap struct {
 	nextWindow key.Binding
 	lastWindow key.Binding
 	createIdea key.Binding
-	escape key.Binding
+	quitNotSaving key.Binding
+	quitSaving key.Binding
 }
 
 func (d delegateKeyMap) ListHelp() []key.Binding {
@@ -61,8 +62,8 @@ func (d delegateKeyMap) ListHelp() []key.Binding {
 
 func (d delegateKeyMap) FileHelp() []key.Binding {
 	return []key.Binding {
-		d.quit,
-		d.escape,
+		d.quitSaving,
+		d.quitNotSaving,
 	}
 }
 
@@ -92,8 +93,13 @@ func NewDelegateKeyMap() *delegateKeyMap {
 			key.WithKeys("q", "ctrl+c"),
 			key.WithHelp("q, ctrl+c", "quit"),
 		),
-		escape: key.NewBinding(
-			key.WithKeys("esc", ""),
+		quitSaving: key.NewBinding(
+			key.WithKeys("shift+w", "shift+w"),
+			key.WithHelp("shift+w", "save and exit file"),
+		),
+		quitNotSaving: key.NewBinding(
+			key.WithKeys("shift+q", "shift+q"),
+			key.WithHelp("shift+q", "save and exit file"),
 		),
 	}
 }

@@ -35,14 +35,18 @@ func (s Window) String() string {
 }
 
 var (
-	MarginStyle = lipgloss.NewStyle().MarginLeft(3)
+	BannerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("93"))
+	MarginStyle = lipgloss.NewStyle().MarginLeft(4)
 	TitleStyle = lipgloss.NewStyle().MarginLeft(2)
 	ItemStyle = lipgloss.NewStyle().PaddingLeft(4)
 	SelectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
 	PaginationStyle = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	HelpStyle = list.DefaultStyles().HelpStyle.MarginLeft(0).PaddingLeft(4).PaddingBottom(1).Foreground(lipgloss.Color("240"))
+	HelpStyle = list.DefaultStyles().HelpStyle.MarginLeft(0).MarginTop(2).PaddingLeft(4).PaddingBottom(1).Foreground(lipgloss.Color("240"))
 	CategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("247"))
 	SelectedCategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("250"))
+	inputTextStyle = MarginStyle.Foreground(lipgloss.Color("57"))
+	inputStyle = MarginStyle.Background(lipgloss.Color("57"))
+	listStyle = lipgloss.NewStyle().Align(lipgloss.Left)
 )
 
 type Model struct {
@@ -54,6 +58,9 @@ type Model struct {
 	inputName textinput.Model
 	inputDesc textinput.Model
 	textArea textarea.Model
+	writted bool
+	height int
+	width int
 }
 
 func (m *Model) cleanInputs() {
@@ -78,7 +85,9 @@ func (m *Model) Init() tea.Cmd {
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.List.SetSize(msg.Width, msg.Height - len(m.List.Items()) * 2)
+		m.height = msg.Height
+		m.width = msg.Width
+		m.List.SetSize(msg.Width, 14)
 		m.textArea.SetWidth(msg.Width - 10)
 		m.textArea.SetHeight(msg.Height - len(m.List.Items()) * 2)
 		return m, nil
@@ -94,18 +103,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if ok {
 						m.choice = i
 					}
-					return m, nil
-				case "n":
-					if m.Window < 1 {
-						m.Window++
-					}
-
+					m.Window = File
 					m.textArea.Focus()
-					return m, nil
-				case "l":
-					if m.Window > 0 {
-						m.Window--
-					}
 					return m, nil
 				case "c":
 					m.currentState = "name"
@@ -129,7 +128,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							m.cleanInputs()
 							return m, nil
 						}
-						files.CreateIdeaFiles(name, strings.Split(categories, "/"))
+						files.CreateIdea(name, strings.Split(categories, "/"))
 						newIdea := model.Idea {
 							Name: name,
 							DescFile: fmt.Sprintf("%s.md", name),
@@ -162,6 +161,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch keypress := msg.String(); keypress {
 			case "esc":
 				m.Window = List
+				m.writted = true
 				return m, nil
 			default:
 				if !m.textArea.Focused() {
@@ -180,16 +180,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) View() string {
-	m.List.Title = ""
-	view := "\n" + files.Banner() + "\n"
+	if m.width == 0 || m.height == 0 {
+		return ""
+	}
+	view := "\n" + BannerStyle.Render(files.Banner()) + "\n"
 	switch m.Window {
 	case List:
-		view += m.List.View() + "\n"
+		view += listStyle.Render(m.List.View()) + "\n"
 		if m.currentState == "name" {
-			view += lipgloss.JoinVertical(lipgloss.Bottom, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render("[*] Enter the idea name...")) + "\n"
-			view += m.inputName.View()
+			view += lipgloss.JoinHorizontal(lipgloss.Left, inputTextStyle.Render("[*] Enter the idea name...")) + "\n"
+			view += inputStyle.Render(m.inputName.View())
 		} else if m.currentState == "description" {
-			view += lipgloss.JoinVertical(lipgloss.Right, lipgloss.NewStyle().Foreground(lipgloss.Color("57")).Render("[*] Enter the idea categories... (separate them by '/')")) + "\n"
+			view += lipgloss.JoinVertical(lipgloss.Right, inputTextStyle.Render("[*] Enter the idea categories... (separate them by '/')")) + "\n"
 			view += m.inputDesc.View()
 		}
 		if m.errorCreatingIdea {
@@ -202,8 +204,20 @@ func (m *Model) View() string {
 			helpText += fmt.Sprintf("%s: %s   ", binding.Help().Key, binding.Help().Desc)
 		}
 		view += HelpStyle.Render(helpText)
+		if m.writted {
+			view += lipgloss.JoinVertical(lipgloss.Left, lipgloss.NewStyle().Foreground(lipgloss.Color("50")).Render("value: " + m.textArea.Value()))
+			m.writted = false
+		}
+		view = lipgloss.NewStyle().Width(m.width).Height(m.height).Align(lipgloss.Center, lipgloss.Center).Render(view)
 	case File:
 		view += "\n" + m.textArea.View() + "\n\n"
+
+		help := NewDelegateKeyMap().FileHelp()
+		helpText := ""
+		for _, binding := range help {
+			helpText += fmt.Sprintf("%s: %s   ", binding.Help().Key, binding.Help().Desc)
+		}
+		view += HelpStyle.Render(helpText)
 	}
 	view += lipgloss.JoinVertical(lipgloss.Left, lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Render(m.Window.String()))
 	return MarginStyle.Render(view)

@@ -1,24 +1,33 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
-	"github.com/AsierAlaminos/NoteShell/internal/files"
+	"github.com/AsierAlaminos/NoteShell/internal/model"
 	"github.com/charmbracelet/bubbles/list"
 	"golang.org/x/term"
 )
 
 func CreateIdeaList(ideasPath string) []list.Item {
-	var items []list.Item
 
-	dirs := files.ReadDirs(ideasPath)
-
-	for _,d := range dirs {
-		jsonPath := fmt.Sprintf("%s/%s/%s.json", ideasPath, d, d)
-		idea := files.ReadJsonIdea(jsonPath)
-		items = append(items, idea)
+	byteValue, err := os.ReadFile(ideasPath)
+	if err != nil {
+		fmt.Println("[!] Exiting... (invalid json file)")
+		os.Exit(1)
 	}
 
+	var items []list.Item
+	var ideas []model.Idea
+
+	if err := json.Unmarshal(byteValue, &ideas); err != nil {
+		fmt.Println("[!] Error in json file")
+	}
+
+	for _, i := range ideas {
+		items = append(items, i)
+	}
 	return items
 }
 

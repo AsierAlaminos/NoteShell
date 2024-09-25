@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"fmt"
 	"os"
@@ -14,9 +15,10 @@ import (
 func main() {
 	files.CreateConfDir()
 	homeDir := files.CheckUser()
-	items := utils.CreateIdeaList(fmt.Sprintf("%s/.noteshell/ideas", homeDir))
+	items := utils.CreateIdeaList(fmt.Sprintf("%s/.noteshell/ideas.json", homeDir))
 
-	l := list.New(items, ui.IdeaDelegate{}, 20, len(items) * 2)
+	l := list.New(items, ui.IdeaDelegate{}, 20, 0)
+	l.Title = ""
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(false)
 	l.SetShowHelp(false)
@@ -31,4 +33,5 @@ func main() {
 		fmt.Println("Error running program: ", err)
 		os.Exit(1)
 	}
+
 }

@@ -20,50 +20,87 @@ func CreateConfDir() {
 		os.Mkdir(confDirPath, 0755)
 	}
 
-	ideasPath := fmt.Sprintf("%s/ideas", confDirPath)
+	docsPath := fmt.Sprintf("%s/docs", confDirPath)
 
-	if _, err := os.Stat(ideasPath); os.IsNotExist(err) {
-		os.Mkdir(ideasPath, 0755)
+	if _, err := os.Stat(docsPath); os.IsNotExist(err) {
+		os.Mkdir(docsPath, 0755)
 	}
+	createFile(fmt.Sprintf("%s/ideas.json", confDirPath), true, "[]")
 }
 
-func CreateIdeaFiles(idea string, categories []string) {
+func CreateIdea(idea string, categories []string) {
 	homeUser := CheckUser()
+	ideasPath := fmt.Sprintf("%s/.noteshell/ideas.json", homeUser)
+	fmt.Printf("ideasPath: %s\n", ideasPath)
 
-	ideaDirPath := fmt.Sprintf("%s/.noteshell/ideas/%s", homeUser, strings.ToLower(idea))
-
-	if _, err := os.Stat(ideaDirPath); os.IsNotExist(err) {
-		os.Mkdir(ideaDirPath, 0755)
-		ideaPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.json", homeUser, strings.ToLower(idea), strings.ToLower(idea))
-		mdPath := fmt.Sprintf("%s/.noteshell/ideas/%s/%s.md", homeUser, strings.ToLower(idea), strings.ToLower(idea))
-		createFile(ideaPath)
-		createFile(mdPath)
-		writeIdeaJson(ideaPath, idea, categories)
+	if exist, id := checkIdea(idea, ideasPath); !exist {
+		mdPath := fmt.Sprintf("%s/.noteshell/notes/%s.md", homeUser, strings.ToLower(idea))
+		addIdea(id, idea, categories, mdPath, ideasPath)
+		//createFile(mdPath, true, fmt.Sprintf("# %s", idea))
 	}
 }
 
-func createFile(filePath string) {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		_, errFile := os.Create(filePath)
-		if errFile == nil {
-			return
+func checkIdea(name string, path string) (bool, int) {
+	byteValue, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Println("[!] Exiting... (invalid json file)")
+		os.Exit(1)
+	}
+	var ideas []model.Idea
+
+	if err := json.Unmarshal(byteValue, &ideas); err != nil {
+		fmt.Println("[!] error json file")
+	}
+	for _, idea := range ideas {
+		if idea.Name == name {
+			return true, -1
 		}
-		fmt.Printf("[!] Error creating %s\n", filePath)
 	}
+	return false, len(ideas)
 }
 
-func writeIdeaJson(ideaPath string, idea string, categories []string) {
-	ideaModel := model.Idea{
-		Name: idea,
-		DescFile: idea + ".md",
+func addIdea(id int, name string, categories []string, descFilePath string , path string) {
+	newIdea := model.Idea {
+		Id: id,
+		Name: name,
+		DescFile: descFilePath,
 		Categories: categories,
 	}
-	squeleton := fmt.Sprintf("{\"name\": \"%s\", \"descfile\": \"%s.md\", \"categories\": [%s]}", ideaModel.Name, ideaModel.Name, ideaModel.ParseCategoriesJson())
-	err := os.WriteFile(ideaPath, []byte(squeleton), 0777)
+
+	byteValue, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Println("[!] Error writing the file")
-	} else {
-		fmt.Println("[*] File written succesfully")
+		fmt.Println("[!] Exiting... (invalid json file)")
+		os.Exit(1)
+	}
+	var ideas []model.Idea
+
+	if err := json.Unmarshal(byteValue, &ideas); err != nil {
+		fmt.Println("[!] error json file")
+	}
+
+	ideas = append(ideas, newIdea)
+	jsonIdeas, err := json.Marshal(ideas)
+	if err != nil {
+		fmt.Println("[!] Error parsing ideas to json")
+	}
+	if err := os.WriteFile(path, jsonIdeas, 0755); err != nil {
+		fmt.Println("[!] Error adding idea")
+	}
+}
+
+func createFile(filePath string, write bool, msg string) {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		_, errFile := os.Create(filePath)
+		if errFile != nil {
+			fmt.Printf("[!] Error creating %s\n", filePath)
+		}
+		if write {
+			file, err := os.OpenFile(filePath, os.O_WRONLY, 0777)
+			if err != nil {
+				return
+			}
+			file.Write([]byte(msg))
+		}
 	}
 }
 
