@@ -110,6 +110,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.inputName.Reset()
 					m.inputName.Focus()	
 					return m, nil
+				case "d":
+					selected := m.List.Index()
+					newItems := files.DeleteIdea(selected)
+					m.List.SetItems(newItems)
+					return m, tea.ClearScreen
 				}
 			} else {
 				switch keypress := msg.String(); keypress {

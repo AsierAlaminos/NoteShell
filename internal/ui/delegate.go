@@ -45,6 +45,7 @@ type delegateKeyMap struct {
 	nextWindow key.Binding
 	lastWindow key.Binding
 	createIdea key.Binding
+	deleteIdea key.Binding
 	quitNotSaving key.Binding
 	quitSaving key.Binding
 }
@@ -54,6 +55,7 @@ func (d delegateKeyMap) ListHelp() []key.Binding {
 		d.up,
 		d.down,
 		d.createIdea,
+		d.deleteIdea,
 		d.nextWindow,
 		d.lastWindow,
 		d.quit,
@@ -80,6 +82,10 @@ func NewDelegateKeyMap() *delegateKeyMap {
 		createIdea: key.NewBinding(
 			key.WithKeys("c", "c"),
 			key.WithHelp("c", "create new idea"),
+		),
+		deleteIdea: key.NewBinding(
+			key.WithKeys("d", "d"),
+			key.WithHelp("d", "delete idea"),
 		),
 		nextWindow: key.NewBinding(
 			key.WithKeys("n", "n"),

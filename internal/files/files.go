@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 
 	"github.com/AsierAlaminos/NoteShell/internal/model"
+	"github.com/charmbracelet/bubbles/list"
 )
 
 func CreateConfDir() {
@@ -131,6 +132,42 @@ func ReadJsonIdea(path string) model.Idea {
 	}
 
 	return idea
+}
+
+func DeleteIdea(id int) []list.Item {
+	filePath := fmt.Sprintf("%s/.noteshell/ideas.json", CheckUser())
+	byteValue, err := os.ReadFile(filePath)
+	if err != nil {
+		fmt.Println("[!] Exiting... (invalid json file)")
+		os.Exit(1)
+	}
+	var ideas []model.Idea
+	var newIdeas []model.Idea
+
+	if err := json.Unmarshal(byteValue, &ideas); err != nil {
+		fmt.Println("[!] error json file")
+	}
+
+	for i, idea := range ideas {
+		if i != id {
+			newIdeas = append(newIdeas, idea)
+		}
+	}
+
+	var items []list.Item
+	for _, i := range newIdeas {
+		items = append(items, i)
+	}
+	
+	jsonIdeas, err := json.Marshal(newIdeas)
+	if err != nil {
+		fmt.Println("[!] Error parsing ideas to json")
+	}
+	if err := os.WriteFile(filePath, jsonIdeas, 0775); err != nil {
+		fmt.Println("[!] Error removing idea")
+	}
+
+	return items
 }
 
 func Banner() string {
