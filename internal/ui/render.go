@@ -58,6 +58,7 @@ type Model struct {
 	inputDesc textinput.Model
 	textArea textarea.Model
 	writted bool
+	removeIdea bool
 	height int
 	width int
 }
@@ -94,27 +95,43 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch m.Window {
 		case List:
 			if m.currentState == "" {
-				switch keypress := msg.String(); keypress {
-				case "q", "ctrl+c":
-					return m, tea.Quit
-				case " ":
-					i, ok := m.List.SelectedItem().(model.Idea)
-					if ok {
-						m.choice = i
+				if m.removeIdea {
+					switch keypress := msg.String(); keypress{
+					case "y":
+						selected := m.List.Index()
+						newItems := files.DeleteIdea(selected)
+						m.List.SetItems(newItems)
+						m.removeIdea = false
+						return m, tea.ClearScreen
+					case "n", "esc":
+						m.removeIdea = false
+						return m, nil
 					}
-					m.Window = File
-					m.textArea.Focus()
-					return m, nil
-				case "c":
-					m.currentState = "name"
-					m.inputName.Reset()
-					m.inputName.Focus()	
-					return m, nil
-				case "d":
-					selected := m.List.Index()
-					newItems := files.DeleteIdea(selected)
-					m.List.SetItems(newItems)
-					return m, tea.ClearScreen
+				} else {
+					switch keypress := msg.String(); keypress {
+					case "q", "ctrl+c":
+						return m, tea.Quit
+					case " ":
+						i, ok := m.List.SelectedItem().(model.Idea)
+						if ok {
+							m.choice = i
+						}
+						m.Window = File
+						m.textArea.Focus()
+						return m, nil
+					case "c":
+						m.currentState = "name"
+						m.inputName.Reset()
+						m.inputName.Focus()	
+						return m, nil
+					case "d":
+						m.removeIdea = true
+						i, ok := m.List.SelectedItem().(model.Idea)
+						if ok {
+							m.choice = i
+						}
+						return m, nil
+					}
 				}
 			} else {
 				switch keypress := msg.String(); keypress {
@@ -191,6 +208,10 @@ func (m *Model) View() string {
 	switch m.Window {
 	case List:
 		view += listStyle.Render(m.List.View()) + "\n"
+
+		if m.removeIdea {
+			view += inputTextStyle.Render(fmt.Sprintf("[*] Do you want to remove %s? (y/n)", m.choice.Name)) + "\n"
+		}
 		if m.currentState == "name" {
 			view += inputTextStyle.Render("[*] Enter the idea name...") + "\n"
 			view += m.inputName.View() + "\n"
