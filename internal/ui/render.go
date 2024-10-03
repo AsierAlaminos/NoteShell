@@ -57,7 +57,6 @@ type Model struct {
 	inputName textinput.Model
 	inputDesc textinput.Model
 	textArea textarea.Model
-	writted bool
 	removeIdea bool
 	height int
 	width int
@@ -184,7 +183,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch keypress := msg.String(); keypress {
 			case "esc":
 				m.Window = List
-				m.writted = true
+				idea := m.List.SelectedItem().(model.Idea)
+				files.WriteDescription(idea.Name, m.textArea.Value())
+				m.textArea.Reset()
 				return m, nil
 			default:
 				if !m.textArea.Focused() {
@@ -231,13 +232,6 @@ func (m *Model) View() string {
 			helpText += fmt.Sprintf("%s: %s   ", binding.Help().Key, binding.Help().Desc)
 		}
 		view += HelpStyle.Render(helpText)
-		if m.writted {
-			view += lipgloss.JoinVertical(lipgloss.Left, lipgloss.NewStyle().Foreground(lipgloss.Color("50")).Render("value: " + m.textArea.Value()))
-			m.writted = false
-			idea := m.List.SelectedItem().(model.Idea)
-			files.WriteDescription(idea.Name, m.textArea.Value())
-			m.textArea.Reset()
-		}
 		view = lipgloss.NewStyle().Width(m.width).Height(m.height).Align(lipgloss.Center, lipgloss.Center).Render(view)
 	case File:
 		view += "\n" + m.textArea.View() + "\n\n"
