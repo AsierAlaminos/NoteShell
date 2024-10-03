@@ -232,6 +232,9 @@ func (m *Model) View() string {
 		if m.writted {
 			view += lipgloss.JoinVertical(lipgloss.Left, lipgloss.NewStyle().Foreground(lipgloss.Color("50")).Render("value: " + m.textArea.Value()))
 			m.writted = false
+			idea := m.List.SelectedItem().(model.Idea)
+			files.WriteDescription(idea.Name, m.textArea.Value())
+			m.textArea.Reset()
 		}
 		view = lipgloss.NewStyle().Width(m.width).Height(m.height).Align(lipgloss.Center, lipgloss.Center).Render(view)
 	case File:

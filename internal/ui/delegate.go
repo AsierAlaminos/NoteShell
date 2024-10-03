@@ -100,12 +100,12 @@ func NewDelegateKeyMap() *delegateKeyMap {
 			key.WithHelp("q, ctrl+c", "quit"),
 		),
 		quitSaving: key.NewBinding(
-			key.WithKeys("shift+w", "shift+w"),
-			key.WithHelp("shift+w", "save and exit file"),
+			key.WithKeys("ctrl+w", "ctrl+w"),
+			key.WithHelp("ctrl+w", "save and exit file"),
 		),
 		quitNotSaving: key.NewBinding(
-			key.WithKeys("shift+q", "shift+q"),
-			key.WithHelp("shift+q", "save and exit file"),
+			key.WithKeys("ctrl+q", "ctrl+q"),
+			key.WithHelp("ctrl+q", "save and exit file"),
 		),
 	}
 }

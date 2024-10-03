@@ -35,9 +35,9 @@ func CreateIdea(idea string, categories []string) {
 	fmt.Printf("ideasPath: %s\n", ideasPath)
 
 	if exist, id := checkIdea(idea, ideasPath); !exist {
-		mdPath := fmt.Sprintf("%s/.noteshell/notes/%s.md", homeUser, strings.ToLower(idea))
+		mdPath := fmt.Sprintf("%s/.noteshell/docs/%s.md", homeUser, strings.ToLower(idea))
 		addIdea(id, idea, categories, mdPath, ideasPath)
-		//createFile(mdPath, true, fmt.Sprintf("# %s", idea))
+		createFile(mdPath, true, fmt.Sprintf("# %s", idea))
 	}
 }
 
@@ -188,4 +188,19 @@ func CheckUser() string {
 	}
 
 	return currentUser.HomeDir
+}
+
+func WriteDescription(idea, text string) {
+	homeDir := CheckUser()
+	filepath := fmt.Sprintf("%s/.noteshell/docs/%s.md", homeDir, idea)
+	byteValue, err := os.ReadFile(filepath)
+	if err != nil {
+		fmt.Println("[!] Exiting... (error writing description)\n%s", err)
+		os.Exit(1)
+	}
+	fileText := fmt.Sprintf("%s%s", byteValue, text)
+
+	if err := os.WriteFile(filepath, []byte(fileText), 0755); err != nil {
+		fmt.Println("[!] Error writing description")
+	}
 }
