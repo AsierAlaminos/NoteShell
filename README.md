@@ -6,7 +6,7 @@
 - [x] List ideas
 - [x] Remove ideas
 - [x] Create ideas
-- [ ] Update ideas
+- [X] Update ideas
 - [ ] Filter idea
 - [ ] Idea description
 - [ ] Kanban todo list
