@@ -3,12 +3,12 @@
 **NoteShell** is a TUI program to take notes in a fuild and organized way on the terminal.
 
 ## Features
-- [x] List ideas
-- [x] Remove ideas
 - [x] Create ideas
-- [X] Update ideas
+- [x] Read ideas
+- [ ] Update ideas
+- [x] Delete ideas
+- [X] Idea description
 - [ ] Filter idea
-- [ ] Idea description
 - [ ] Kanban todo list
 - [ ] File encryption
 
