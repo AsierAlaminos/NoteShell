@@ -118,6 +118,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 						m.Window = File
 						m.textArea.Focus()
+						idea := m.List.SelectedItem().(model.Idea)
+						m.textArea.SetValue(files.ReadDescription(idea.Name))
 						return m, nil
 					case "c":
 						m.currentState = "name"
@@ -239,7 +241,6 @@ func (m *Model) View() string {
 		view = lipgloss.NewStyle().Width(m.width).Height(m.height).Align(lipgloss.Center, lipgloss.Center).Render(view)
 	case File:
 		view += "\n" + m.textArea.View() + "\n\n"
-
 		help := NewDelegateKeyMap().FileHelp()
 		helpText := ""
 		for _, binding := range help {

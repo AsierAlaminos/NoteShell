@@ -193,14 +193,18 @@ func CheckUser() string {
 func WriteDescription(idea, text string) {
 	homeDir := CheckUser()
 	filepath := fmt.Sprintf("%s/.noteshell/docs/%s.md", homeDir, idea)
-	byteValue, err := os.ReadFile(filepath)
-	if err != nil {
-		fmt.Println("[!] Exiting... (error writing description)\n%s", err)
-		os.Exit(1)
-	}
-	fileText := fmt.Sprintf("%s%s", byteValue, text)
-
-	if err := os.WriteFile(filepath, []byte(fileText), 0755); err != nil {
+	if err := os.WriteFile(filepath, []byte(text), 0755); err != nil {
 		fmt.Println("[!] Error writing description")
 	}
+}
+
+func ReadDescription(idea string) string {
+	homedir := CheckUser()
+	filepath := fmt.Sprintf("%s/.noteshell/docs/%s.md", homedir, idea)
+
+	byteValue, err := os.ReadFile(filepath)
+	if err != nil {
+		fmt.Println("[!] Exiting... (error reading description)\n%s", err)
+	}
+	return string(byteValue)
 }
