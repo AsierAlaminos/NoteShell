@@ -181,7 +181,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case File:
 			switch keypress := msg.String(); keypress {
-			case "esc":
+			case "ctrl+q":
+				m.Window = List
+				m.textArea.Reset()
+				return m, nil
+			case "ctrl+w":
 				m.Window = List
 				idea := m.List.SelectedItem().(model.Idea)
 				files.WriteDescription(idea.Name, m.textArea.Value())
