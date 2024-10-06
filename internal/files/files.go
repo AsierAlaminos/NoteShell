@@ -135,7 +135,8 @@ func ReadJsonIdea(path string) model.Idea {
 }
 
 func DeleteIdea(id int) []list.Item {
-	filePath := fmt.Sprintf("%s/.noteshell/ideas.json", CheckUser())
+	homeDir := CheckUser()
+	filePath := fmt.Sprintf("%s/.noteshell/ideas.json", homeDir)
 	byteValue, err := os.ReadFile(filePath)
 	if err != nil {
 		fmt.Println("[!] Exiting... (invalid json file)")
@@ -146,6 +147,11 @@ func DeleteIdea(id int) []list.Item {
 
 	if err := json.Unmarshal(byteValue, &ideas); err != nil {
 		fmt.Println("[!] error json file")
+	}
+
+	if err := os.Remove(ideas[id].DescFile); err != nil {
+		fmt.Println("[!] error deleting desc file")
+		os.Exit(1)
 	}
 
 	for i, idea := range ideas {
