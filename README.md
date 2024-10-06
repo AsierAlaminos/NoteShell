@@ -21,6 +21,10 @@ This is a project that uses Charm libraries:
 
 ### [Bubbles](https://github.com/charmbracelet/bubbles)
 
+## Example
+
+![NoteShell](assets/noteshell.gif)
+
 ## Instalation
 
 Clone the repository:
