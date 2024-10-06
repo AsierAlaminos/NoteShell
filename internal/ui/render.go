@@ -46,6 +46,7 @@ var (
 	SelectedCategoryStyle = lipgloss.NewStyle().PaddingLeft(7).Foreground(lipgloss.Color("250"))
 	inputTextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("57"))
 	listStyle = lipgloss.NewStyle().Align(lipgloss.Left)
+	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 )
 
 type Model struct {
@@ -58,6 +59,8 @@ type Model struct {
 	inputDesc textinput.Model
 	textArea textarea.Model
 	removeIdea bool
+	updateIdea bool
+	updateError string
 	height int
 	width int
 }
@@ -125,6 +128,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.inputName.Reset()
 						m.inputName.Focus()	
 						return m, nil
+					case "u":
+						m.updateIdea = true
+						m.currentState = "name"
+						m.inputName.Reset()
+						m.inputName.Focus()	
+						i, ok := m.List.SelectedItem().(model.Idea)
+						if ok {
+							m.choice = i
+						}
+						fmt.Printf("[*] updating idea")
+						return m, nil
 					case "d":
 						m.removeIdea = true
 						i, ok := m.List.SelectedItem().(model.Idea)
@@ -150,16 +164,28 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							m.cleanInputs()
 							return m, nil
 						}
-						files.CreateIdea(name, strings.Split(categories, "/"))
-						newIdea := model.Idea {
-							Name: name,
-							DescFile: fmt.Sprintf("%s.md", name),
-							Categories: strings.Split(categories, "/"),
+						if m.updateIdea {
+							updatedItems := files.UpdateIdea(m.choice.Id, name, strings.Split(categories, "/"))
+							if updatedItems == nil {
+								m.updateError = fmt.Sprintf("[!] %s exists \n", name)
+								return m, nil
+							}
+							m.List.SetItems(updatedItems)
+							m.cleanInputs()
+							m.updateIdea = false
+							fmt.Printf("[*] idea updated")
+						} else {
+							files.CreateIdea(name, strings.Split(categories, "/"))
+							newIdea := model.Idea {
+								Name: name,
+								DescFile: fmt.Sprintf("%s.md", name),
+								Categories: strings.Split(categories, "/"),
+							}
+							m.cleanInputs()
+							items := m.List.Items()
+							items = append(items, newIdea)
+							m.List.SetItems(items)
 						}
-						m.cleanInputs()
-						items := m.List.Items()
-						items = append(items, newIdea)
-						m.List.SetItems(items)
 						return m, tea.ClearScreen
 					}
 				case "esc":
@@ -181,6 +207,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case File:
 			switch keypress := msg.String(); keypress {
+			case "esc":
+				idea := m.List.SelectedItem().(model.Idea)
+				files.WriteDescription(idea.Name, m.textArea.Value())
+				return m, nil
 			case "ctrl+q":
 				m.Window = List
 				m.textArea.Reset()
@@ -228,7 +258,14 @@ func (m *Model) View() string {
 		}
 		if m.errorCreatingIdea {
 			m.errorCreatingIdea = false
-			view += lipgloss.JoinVertical(lipgloss.Left, lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Render("[!] Error creating new idea..."))
+			view += lipgloss.JoinVertical(lipgloss.Left, errorStyle.Render("[!] Error creating new idea..."))
+		}
+		if m.updateError != "" {
+			m.currentState = ""
+			m.inputName.Reset()
+			m.inputDesc.Reset()
+			view += lipgloss.JoinVertical(lipgloss.Left, errorStyle.Render(m.updateError))
+			m.updateError = ""
 		}
 		help := NewDelegateKeyMap().ListHelp()
 		helpText := ""

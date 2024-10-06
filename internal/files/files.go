@@ -208,3 +208,49 @@ func ReadDescription(idea string) string {
 	}
 	return string(byteValue)
 }
+
+func UpdateIdea(ideaIndex int, name string, categories []string) []list.Item {
+	homedir := CheckUser()
+	if exist, _ := checkIdea(name, fmt.Sprintf("%s/.noteshell/ideas.json", homedir)); exist {
+		return nil
+	}
+	ideasPath := fmt.Sprintf("%s/.noteshell/ideas.json", homedir)
+
+	byteValue, err := os.ReadFile(ideasPath)
+	if err != nil {
+		fmt.Println("[!] Exiting... (invalid json file)")
+		os.Exit(1)
+	}
+
+	var items []list.Item
+	var ideas []model.Idea
+
+	if err := json.Unmarshal(byteValue, &ideas); err != nil {
+		fmt.Println("[!] Error in json file")
+	}
+	descFilePath := fmt.Sprintf("%s/.noteshell/docs/%s.md", homedir, name)
+
+	lastName := fmt.Sprintf("%s/.noteshell/docs/%s.md", homedir, ideas[ideaIndex].Name)
+	ideas[ideaIndex].Name = name
+	ideas[ideaIndex].Categories = categories
+	ideas[ideaIndex].DescFile = descFilePath
+
+	if err := os.Rename(lastName, descFilePath); err != nil {
+		fmt.Printf("[!] Error renaming idea description file: %s\n", err)
+		os.Exit(1)
+	}
+
+	jsonIdeas, err := json.Marshal(ideas)
+	if err != nil {
+		fmt.Println("[!] Error parsing ideas to json")
+	}
+
+	if err := os.WriteFile(ideasPath, jsonIdeas, 0755); err != nil {
+		fmt.Println("[!] Error adding idea")
+	}
+
+	for _, i := range ideas {
+		items = append(items, i)
+	}
+	return items
+}

@@ -5,7 +5,7 @@
 ## Features
 - [x] Create ideas
 - [x] Read ideas
-- [ ] Update ideas
+- [X] Update ideas
 - [x] Delete ideas
 - [X] Idea description
 - [ ] Filter idea
