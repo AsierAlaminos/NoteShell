@@ -8,7 +8,7 @@
 - [X] Update ideas
 - [x] Delete ideas
 - [X] Idea description
-- [ ] Filter idea
+- [X] Filter idea
 - [ ] Kanban todo list
 - [ ] File encryption
 
