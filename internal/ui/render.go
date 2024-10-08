@@ -6,6 +6,7 @@ import (
 
 	"github.com/AsierAlaminos/NoteShell/internal/files"
 	"github.com/AsierAlaminos/NoteShell/internal/model"
+	"github.com/AsierAlaminos/NoteShell/internal/utils"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -51,6 +52,7 @@ var (
 
 type Model struct {
 	List list.Model
+	BackupList list.Model
 	choice model.Idea
 	Window Window
 	currentState string
@@ -60,6 +62,8 @@ type Model struct {
 	textArea textarea.Model
 	removeIdea bool
 	updateIdea bool
+	filter bool
+	filterValue string
 	updateError string
 	height int
 	width int
@@ -109,6 +113,32 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.removeIdea = false
 						return m, nil
 					}
+				} else if (m.filter) {
+					switch keypress := msg.String(); keypress {
+					case "esc":
+						m.filter = false
+						m.filterValue = ""
+						m.inputName.Reset()
+						m.List.SetItems(m.BackupList.Items())
+						return m, tea.ClearScreen
+					case "enter":
+						filteredList := utils.FilterIdeas(m.filterValue, m.List.Items())
+						m.List.SetItems(filteredList)
+						m.filter = false
+						m.filterValue = ""
+						m.inputName.Reset()
+						return m, tea.ClearScreen
+					case "backspace":
+						m.filterValue = m.filterValue[:len(m.filterValue) - 1]
+						m.inputName.SetValue(m.filterValue)
+						return m, nil
+					default:
+						var cmd tea.Cmd
+						m.filterValue += keypress
+						utils.FilterIdeas(m.filterValue, m.List.Items())
+						m.inputName, cmd = m.inputName.Update(msg)
+						return m, cmd
+					}
 				} else {
 					switch keypress := msg.String(); keypress {
 					case "q", "ctrl+c":
@@ -145,6 +175,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						if ok {
 							m.choice = i
 						}
+						return m, nil
+					case "f":
+						m.filter = true
+						m.filterValue = ""
+						m.inputName.Focus()
+						return m, nil
+					case "r":
+						m.List.SetItems(m.BackupList.Items())
 						return m, nil
 					}
 				}
@@ -266,6 +304,10 @@ func (m *Model) View() string {
 			m.inputDesc.Reset()
 			view += lipgloss.JoinVertical(lipgloss.Left, errorStyle.Render(m.updateError))
 			m.updateError = ""
+		}
+		if m.filter {
+			view += inputTextStyle.Render("[*] Enter the idea name...") + "\n"
+			view += m.inputName.View() + "\n"
 		}
 		help := NewDelegateKeyMap().ListHelp()
 		helpText := ""

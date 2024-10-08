@@ -48,6 +48,8 @@ type delegateKeyMap struct {
 	save key.Binding
 	quitNotSaving key.Binding
 	quitSaving key.Binding
+	filter key.Binding
+	resetList key.Binding
 }
 
 func (d delegateKeyMap) ListHelp() []key.Binding {
@@ -58,6 +60,8 @@ func (d delegateKeyMap) ListHelp() []key.Binding {
 		d.updateIdea,
 		d.deleteIdea,
 		d.quit,
+		d.filter,
+		d.resetList,
 	}
 }
 
@@ -106,6 +110,14 @@ func NewDelegateKeyMap() *delegateKeyMap {
 		quitNotSaving: key.NewBinding(
 			key.WithKeys("ctrl+q", "ctrl+q"),
 			key.WithHelp("ctrl+q", "save and exit file"),
+		),
+		filter: key.NewBinding(
+			key.WithKeys("f", "f"),
+			key.WithHelp("f", "filter list"),
+		),
+		resetList: key.NewBinding(
+			key.WithKeys("r", "r"),
+			key.WithHelp("r", "reset list"),
 		),
 	}
 }

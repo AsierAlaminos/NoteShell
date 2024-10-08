@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/AsierAlaminos/NoteShell/internal/model"
 	"github.com/charmbracelet/bubbles/list"
@@ -38,4 +39,17 @@ func getTerminalSize() (width, height int){
 		return 
 	}
 	return w, h
+}
+
+func FilterIdeas(value string, ideas []list.Item) []list.Item {
+	var filteredIdeas []list.Item
+
+	for _, item := range ideas {
+		idea := item.(model.Idea)
+		if strings.ToLower(idea.Name)[:len(value)] ==  strings.ToLower(value) {
+			filteredIdeas = append(filteredIdeas, item)
+		}
+	}
+
+	return filteredIdeas
 }

@@ -26,7 +26,7 @@ func main() {
 	l.Styles.PaginationStyle = ui.PaginationStyle
 	l.Styles.HelpStyle = ui.HelpStyle
 
-	m := ui.Model{List: l, Window: ui.List}
+	m := ui.Model{List: l, BackupList: l, Window: ui.List}
 
 	program := tea.NewProgram(&m, tea.WithAltScreen())
 	if _, err := program.Run(); err != nil {
