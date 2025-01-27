@@ -1,6 +1,6 @@
 # 📓 NoteShell
 
-**NoteShell** is a TUI program to take notes in a fuild and organized way on the terminal.
+**NoteShell** is a TUI program to take notes in a fluid and organized way on the terminal.
 
 ## Features
 - [x] Create ideas
